@@ -2,7 +2,9 @@
 title: 'Tutorial 1: Introduction to Machine Learning with Python¶'
 author: "Jonathan Ish-Horowicz"
 date: "12/01/2020"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -171,15 +173,25 @@ return.mse <- function(predictions, testing.data) {
 
 # Calculate the test MSE for each the elements of attribute.combinations
 # by calling return.predictions and return.mse
+results = as.data.frame(
+  sapply(
+    attribute.combinations, 
+    function(att) return.mse(
+      return.predictions(
+        att, training.data,test.data),test.data
+      )
+    )
+  )
 
-
-
-for (att in attribute.combinations){
-  #print("For params: ",att,"\n MSE: \t",
-              #return.mse(return.predictions(att, training.data,test.data),
-               #          test.data))
-  preds = return.predictions(att, training.data,test.data)
-  print(att)
-  print(paste("MSE: ", return.mse(preds, test.data)))
-}
+colnames(results)[1] = "MSE"
+results$Attributes = sapply(attribute.combinations, function(x) paste(x, collapse = ","))
+# FOR LOOPS MUST BE AVOIDED
+# for (att in attribute.combinations){
+#   #print("For params: ",att,"\n MSE: \t",
+#               #return.mse(return.predictions(att, training.data,test.data),
+#                #          test.data))
+#   preds = return.predictions(att, training.data,test.data)
+#   print(att)
+#   print(paste("MSE: ", return.mse(preds, test.data)))
+# }
 ```

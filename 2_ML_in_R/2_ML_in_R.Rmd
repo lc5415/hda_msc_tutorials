@@ -194,4 +194,6 @@ results$Attributes = sapply(attribute.combinations, function(x) paste(x, collaps
 #   print(att)
 #   print(paste("MSE: ", return.mse(preds, test.data)))
 # }
+
+print(results)
 ```

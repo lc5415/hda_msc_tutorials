@@ -7,7 +7,7 @@ Specific instructions for each tutorial is contained in the corresponding folder
 ## Instructions for cloning
 Since this is a public repository, you will not need credentials to clone it.
 
-To start with, navigate to a desired folder in your command line prompt. For example, if you would like this repo to be in a new folder named `~\tutorials`, in your home directory, then do
+To start with, navigate to a desired folder in your command line prompt. For example, if you would like this repo to be in a new folder named `~/tutorials`, in your home directory, then do
 
 ```
 cd

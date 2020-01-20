@@ -27,7 +27,11 @@ In order to do this, first install the `virtualenv` package by typing the follow
 
 ```pip3 install virtualenv```
 
-Following this, navigate to this folder, wherever it is stored locally, and enter the following. 
+If you are using Anaconda, please do
+
+```conda install -c anaconda virtualenv```
+
+Following this, navigate to **current folder** of the repository, wherever it is stored locally, and enter the following. 
 
 ```virtualenv venv```
 
@@ -42,6 +46,10 @@ This process is explained in more detail [here.](https://uoa-eresearch.github.io
 Once you have activated your virtual environment, install the required packages using 
 
 ```pip install -r requirements.txt```
+
+If you are using Anaconda, do
+
+```conda install --file requirements.txt```
 
 This will install the packages listed in `/requirements.txt`.
 

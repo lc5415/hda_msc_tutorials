@@ -28,6 +28,7 @@ In R we can load the Iris dataset from the `datasets` package:
 ```{r message=FALSE}
 # Load the iris dataset
 library(datasets)
+library(matlib)
 data(iris)
 iris$Species <- as.character(iris$Species)
 ```
@@ -42,12 +43,15 @@ Suggestion: use the the `group_by` and `summarise_all` functions from the `dplyr
 library(dplyr)
 
 # Calculate the mean of each attribute
+print(colMeans(select(iris, -Species)))
 
 # Calculate the standard deviation of each attribute
-
+print(apply(select(iris, -Species), 2, sd))
 # Calculate the minimum of each attribute
+print(apply(select(iris, -Species), 2, min))
 
 # Calculate the maximum of each attribute
+print(apply(select(iris, -Species), 2, max))
 
 ```
 
@@ -60,6 +64,10 @@ Suggestion: use the `ggplot2` library. For a nice pairs plot use the `ggpairs` f
 ```{r message=FALSE}
 library(ggplot2)
 library(GGally)
+
+ggplot(iris, aes(Sepal.Length, Sepal.Width, color = Species))+geom_point()
+
+ggplot(iris, aes(Species, Sepal.Length))+geom_boxplot()
 ```
 
 # 4) Classification using Least Squares
@@ -70,7 +78,8 @@ a) Create separate datasets for the classes `setosa` and `versicolor`.
 
 ```{r}
 # your code here
-
+setosa = iris %>% filter(Species == "setosa") 
+versicolor = iris %>% filter(Species == "versicolor")
 # result should be two dataframes (one for each for setosa, versicolor classes),
 # each with dim (50,5) - 4 attributes plus column for class
 stopifnot(all(dim(setosa)==c(50,5)))
@@ -82,7 +91,8 @@ b) add a column to each dataset where the column is $1$ if the class is `setosa`
 
 ```{r}
 # your code here
-
+setosa$Output = 1
+versicolor$Output = -1
 # result should add a column to each of setosa and versicolor
 stopifnot(all(dim(setosa)==c(50,6)))
 stopifnot(all(dim(versicolor)==c(50,6)))
@@ -93,6 +103,13 @@ c) create training and test datasets, with 20% of the data for testing. This 80 
 
 ```{r}
 # your code here
+dataset = rbind(setosa, versicolor)
+
+tr.index = sample(100, 80)
+tst.index = rownames(dataset)[!rownames(dataset) %in% tr.index]
+
+training.data = dataset[tr.index,]
+test.data = dataset[tst.index,]
 
 # resulting dataframes (one each for training and test data) should have
 # the appropriate sizes
@@ -119,17 +136,25 @@ return.predictions <- function(attribute.names, training.data, test.data) {
   
   # Format training and test data (as matrices)
   ### your code here
+  X.train = as.matrix(training.data[,attribute.names])
+  X.test = as.matrix(test.data[,attribute.names])
+  
+  X.train = cbind(matrix(1,nrow(X.train)), X.train)
+  X.test = cbind(matrix(1,nrow(X.test)), X.test)
+  
+  y.train = as.matrix(training.data[,"Output"])
 
   # Calculate optimal weights
   ### your code here
+  params = inv(t(X.train)%*%X.train)%*%t(X.train)%*%y.train
   
   # Make predictions
   ### your code here
-
-  return(predictions)
+  predictions = X.test %*% params
+    
+  predictions
 }
 ```
-
 
 
 e) evaluate which input attributes are the best.
@@ -139,9 +164,22 @@ e) evaluate which input attributes are the best.
 # the corresponding testing data
 return.mse <- function(predictions, testing.data) {
   ### your code here
-  return(mse)
+  
+  mse = mean((predictions - testing.data[,'Output'])^2)
+  mse
 }
 
 # Calculate the test MSE for each the elements of attribute.combinations
 # by calling return.predictions and return.mse
+
+
+
+for (att in attribute.combinations){
+  #print("For params: ",att,"\n MSE: \t",
+              #return.mse(return.predictions(att, training.data,test.data),
+               #          test.data))
+  preds = return.predictions(att, training.data,test.data)
+  print(att)
+  print(paste("MSE: ", return.mse(preds, test.data)))
+}
 ```

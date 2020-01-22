@@ -1,6 +1,6 @@
 ---
 title: 'Tutorial 1: Introduction to Machine Learning with Python¶'
-author: "Jonathan Ish-Horowicz"
+author: "Luis Chaves"
 date: "12/01/2020"
 output:
   pdf_document: default
@@ -76,7 +76,7 @@ ggplot(iris, aes(Species, Sepal.Length))+geom_boxplot()
 
 Here we will be carrying out classification using the least squares formulation on 2 classes of the dataset.
 
-a) Create separate datasets for the classes `setosa` and `versicolor`.
+### a) Create separate datasets for the classes `setosa` and `versicolor`.
 
 ```{r}
 # your code here
@@ -89,7 +89,7 @@ stopifnot(all(dim(versicolor)==c(50,5)))
 ```
 
 
-b) add a column to each dataset where the column is $1$ if the class is `setosa` and $-1$ otherwise.
+### b) add a column to each dataset where the column is $1$ if the class is `setosa` and $-1$ otherwise.
 
 ```{r}
 # your code here
@@ -101,7 +101,7 @@ stopifnot(all(dim(versicolor)==c(50,6)))
 ```
 
 
-c) create training and test datasets, with 20% of the data for testing. This 80 training points and 20 testing points in total (half this per class).
+### c) create training and test datasets, with 20% of the data for testing. This 80 training points and 20 testing points in total (half this per class).
 
 ```{r}
 # your code here
@@ -121,7 +121,7 @@ stopifnot(all(dim(test.data)==c(20,6)))
 
 
 
-d) apply the least squares solution to obtain an optimal solution for different combinations of the 4 available attributes. The code to create a list containing all the combinations of the attributes has been provided.
+### d) apply the least squares solution to obtain an optimal solution for different combinations of the 4 available attributes. The code to create a list containing all the combinations of the attributes has been provided.
 
 ```{r}
 # Creates all possible combinations of attributes
@@ -157,7 +157,6 @@ return.predictions <- function(attribute.names, training.data, test.data) {
   predictions
 }
 ```
-
 
 e) evaluate which input attributes are the best.
 

@@ -1,0 +1,208 @@
+---
+  title: 'Tutorial 3: Data Visualisation in R¶'
+author: "Kate Highnam"
+date: "27/01/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Tutorial 3: Introduction to Data Manipulation and Visualisations in R
+
+In this notebook, we shall show you how to manipulate an example dataset and visualise it in `R`. This is commonly refered to as Exploratory Data Analysis (EDA) amongst Data Scientists. This is only an introduction and there are many other ways to manipulate and visualise data, just look online!
+
+This notebook is organised as follows:
+
+1. Reading in the Data
+2. Cleaning up the Data
+3. Understanding the Data
+4. Visualising the Data
+
+```{r message=FALSE}
+install.packages("tidyverse")
+library(tidyverse)
+library(ggplot2)
+library(GGally)
+require(plyr)
+require(dplyr)
+library(dplyr)
+library(plyr)
+```
+
+# 1) Reading in the Data
+
+First stage of any Python data analysis is to first pull in all of the data into a local representation (a variable). For this tutorial, we will be using Pandas Dataframes, a common tool for data wrangling. See the cheatsheet within this directory for more cool tricks with Pandas Dataframes.
+
+The dataset used in this tutorial is from Kaggle:
+
+Heart Disease UCI on #kaggle via @KaggleDatasets https://kaggle.com/ronitf/heart-disease-uci?utm_medium=social&utm_campaign=kaggle-dataset-share&utm_source=twitter
+
+The easiest and most common format to receive data in is a CSV. Other formats work well too (e.g. JSON, TXT, XML).
+
+1. Read heart.csv into a pandas dataframe and print out its shape
+
+```{r message=FALSE}
+
+```
+
+```{r message=FALSE}
+
+```
+
+1. Show the first few rows of the data
+
+```{r message=FALSE}
+
+
+```
+
+2. Extract the labels from the data and store them as an array in a variable called y. Then print the first 10 values to make sure you stored them correctly as an array.
+
+```{r message=FALSE}
+
+
+```
+
+3. Remove the labels from the data we could use to train a model and store the remaining columns in a variable called X_df (_df is appended to remember this is a dataframe object still). Print a preview of the first 10 rows to make sure you did this.
+
+```{r message=FALSE}
+
+
+```
+
+## Cleaning up the Data
+
+Now that we have the data within Pandas Dataframes, it will be a bit easier to manipulate the data and clean up any errors we might not have expected to find. To do this, ask yourself, "What do I expect the data to look like in each column?" and then check it!
+
+According to the website, this is what the dataset should look like...
+
+`age`: age in years
+
+`sex`: male, female
+
+`cp`: chest pain type (4 values)
+
+`trestbps`: resting blood pressure (in mm Hg on admission to the hospital)
+
+`chol`: serum cholestoral in mg/dl
+
+`fbs`: (fasting blood sugar > 120 mg/dl) (1 = true; 0 = false)
+
+`restecg`: resting electrocardiographic results (values: 0, 1, 2)
+
+`thalach`: maximum heart rate achieved
+
+`exang`: exercise induced angina (1 = yes; 0 = no)
+
+`oldpeak`: ST depression induced by exercise relative to rest
+
+`slope`: the slope of the peak exercise ST segment
+
+`ca`: number of major vessels (0-3) colored by flourosopy
+
+`thal`: 3 = normal; 6 = fixed defect; 7 = reversable defect
+
+`target`: T or F (heart disease present or not, respectively)
+
+4. Try to `summarise` the values in the `age` column, as we did in Python. Ignore the 25%, 50%, and 75%.
+
+```{r message=FALSE}
+# count
+
+# mean
+
+# std
+
+# min
+
+# max
+
+```
+
+5. How many `male` and `female` patients are there?
+
+```{r message=FALSE}
+
+
+```
+
+6. Check how many different values are stored in the `cp` column with a single function.
+
+```{r message=FALSE}
+
+```
+
+7. Sometimes the functions you want to use will not be compatible with pandas dataframe objects. 
+
+```{r message=FALSE}
+
+```
+
+8. Try replacing the name `oldpeak` to `stdepress`.
+
+```{r message=FALSE}
+
+```
+
+9. Change the values in sex to be numbers (male = 1, female = 0). Hint: Try applying a map function
+
+```{r message=FALSE}
+
+
+```
+
+10. Translate the T and F values in the labels to numerical values (1 and 0, respectively). Be careful not to change the order!
+
+```{r message=FALSE}
+
+
+```
+
+This is relatively clean data, i.e. with no null or NA values. Not every dataset will be this nice. Use the included cheatsheets for additional commands that may be useful in the future.
+
+## Understanding the Data
+
+What other trends should the data have that are more than just a description? Should there be more of one type of feature than another? Check these and see what is important.
+
+
+11. Is everything as it says it should be? Does the data seem to match the description? Does it make sense?
+
+```{r message=FALSE}
+
+```
+
+## Visualing the Data 
+
+Numbers are great for expressing quantifiable information, but "a picture says a thousand words"...
+
+12. Make a pie chart to visualise the balance of male to female patients
+
+```{r message=FALSE}
+
+```
+
+
+13. Make a box & whisker plot to visualise the ages of the patients.
+
+```{r message=FALSE}
+
+```
+
+14. Make a box & whisker plot to visualise the ages with respect to whether the heart disease is present or not.
+
+```{r message=FALSE}
+
+
+```
+
+Now make a nifty visualisation on your own!
+
+## References
+
+* https://towardsdatascience.com/exploratory-data-analysis-in-r-for-beginners-fe031add7072
+* https://cran.r-project.org/web/packages/dlookr/vignettes/EDA.html
+* https://blog.datascienceheroes.com/exploratory-data-analysis-in-r-intro/
+* https://www.datacamp.com/community/tutorials/r-data-import-tutorial#csv
+* 

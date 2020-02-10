@@ -38,10 +38,49 @@ plot(df$X_x, df$X_y, col = df$labels+3)
 # For SVM the line that maximises the margin is the optimal model
 
 # Task 3: Use the e1071 package to build a support vector classifier using a linear kernel
-# Plot the decision fuction on the data
+# Plot the decision fuction on the data using the plot.svm.margin function given
 
 library("e1071")
 
+
+plot.svm.margin <- function(model, data, main="") {
+  if (model$kernel==0) {
+    # Linear kernel
+    
+    # Plot the data
+    plot(data$X_x, data$X_y, col=data$labels+3, main=main)
+    
+    # Add the decision boundary and margins
+    x1min <- min(data$X_x)
+    x1max <- max(data$X_x)
+    coef1 <- sum(model$coefs*data$X_x[model$index]);
+    coef2 <- sum(model$coefs*data$X_y[model$index]);
+    
+    lines(c(x1min,x1max),  (model$rho-coef1*c(x1min, x1max))/coef2)
+    lines(c(x1min,x1max),  (model$rho+1-coef1*c(x1min, x1max))/coef2, lty=2)
+    lines(c(x1min,x1max),  (model$rho-1-coef1*c(x1min, x1max))/coef2, lty=2)
+  }
+  else if(model$kernel==2|1) {
+    # RBF or polynomial kernel
+    
+    # Create grid
+    xx <- seq(min(data$X_x), max(data$X_x), length.out=100)
+    yy <- seq(min(data$X_y), max(data$X_y), length.out=100)
+    xgrid <- expand.grid(X_x=xx, X_y=yy) #generating grid points
+    ygrid <- predict(model, newdata=xgrid)
+    
+    # Evaluate model on grid
+    func <- predict(model, xgrid, decision.values=TRUE)
+    func <- attributes(func)$decision 
+    
+    # Plot
+    plot(xgrid, col=as.numeric(ygrid)+3, cex=0.3)
+    points(data$X_x, data$X_y, col=data$labels+3)
+    contour(xx, yy, matrix(func, length(xx), length(yy)), level=0, add=TRUE, lwd=3)
+  }
+  else
+    stop("Linear (0), Polynomial (1) or RBF (2) kernel only")
+}
 
 
 # Task 4: Change the number of points in the dataset using X = X[1:N] and df$labels = df$labels[1:N]

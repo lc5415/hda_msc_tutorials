@@ -13,25 +13,39 @@ import seaborn as sns; sns.set()
 
 from sklearn.datasets.samples_generator import make_blobs
 
+########### FOR SVM CUSTOM ####################
+from scipy.optimize import minimize
+import scipy
+from autograd import grad
+import autograd
+from scipy.optimize import NonlinearConstraint, LinearConstraint
+import autograd.numpy as anp
+from scipy.optimize import Bounds
+###############################################
+
 # consider two classes of points which are well separated
 X, y = make_blobs(n_samples=50, centers=2,
                   random_state=0, cluster_std=0.50)
 plt.scatter(X[:, 0], X[:, 1], c=y, s=50, cmap='autumn')
 
-plt.show()
 
 # Task 1: Attempt to use linear regression to separate this data using linear regression.
 # Note there are several possibilities which separate the data? 
 # What happens to the classification of point [0.6, 2.1] (or similar)?
+## they actually mean: draw random lines that separate the points
 
+x_to_plot = np.linspace(-0.5,3.5)
+for m,b in [(1,0.5),(2,0.3),(0.6, 2.1)]:
+    plt.plot(x_to_plot, x_to_plot*m+b)
 
+plt.show()
 
 
 # With SVM rather than simply drawing a zero-width line between the 
 # classes, we draw a margin of some width around each line, up to the nearest point. 
 # For example for these lines:
 
-""" 
+
 xfit = np.linspace(-1, 3.5)
 plt.scatter(X[:, 0], X[:, 1], c=y, s=50, cmap='autumn')
 
@@ -43,10 +57,19 @@ for m, b, d in [(1, 0.65, 0.33), (0.5, 1.6, 0.55), (-0.2, 2.9, 0.2)]:
 
 plt.xlim(-1, 3.5)
 plt.show()
-"""
+
 # Task 2: Draw the margin around the lines you chose in Task 1.
 
+plt.scatter(X[:, 0], X[:, 1], c=y, s=50, cmap='autumn')
+x_to_plot = np.linspace(-0.5,3.5)
+for m,b,d in [(1,0.65, 0.4),(0.5,1, 0.1),(0.6, 2.1,0.1)]:
+    y_boundary = x_to_plot*m+b
+    plt.plot(x_to_plot, y_boundary)
+    plt.fill_between(x_to_plot, y_boundary - d, y_boundary + d,
+                     edgecolor='none',
+                     color='#AAAAAA', alpha=0.4)
 
+plt.show()
 
 
 # For SVM the line that maximises the margin is the optimal model
@@ -54,7 +77,52 @@ plt.show()
 # Task 3: Use the sklearn package to build a support vector classifier using a linear kernel
 # (hint: you will need from sklearn.svm import SVC). Plot the decision fuction on the data
 
+# first we need y to be {-1,1}
+y[y == 0] = -1
 
+class SVMCustom:
+    def __init__(self):
+        
+        pass
+    
+    def train(self, X, y):
+        self.X = X
+        self.y = y
+        self.alpha = self.optimization_function()
+        # compute w from alpha, y and X
+        # for loop iterates row by row
+        self.w = np.sum(self.alpha*self.y*x) for x in self.X
+        self.b = self.y - self.w.T*self.X
+
+    
+    def optimization_function(self):
+        # we wish to maximise the margin between support vector gamma
+        # gamma = 1/||w||
+        # this is equivalent to minimising ||w||
+        #              ==> 1/2(||w||)^2 
+        #              ==> 1/2 w.T*w
+        def objective(P):
+            # P is equivalent to alpha in this case, it's what we wish to
+            # optimise for
+            return np.sum(P)-0.5*np.sum(np.multiply(np.dot(P,P.T),
+                          np.dot(self.y,self.y.T), np.dot(self.X,self.X.T)))
+            
+        gradient = grad(objective, 0)
+        bnds = Bounds([0,np.inf],[0,0])
+        # by default ineq does f(x) >= 0
+        cons = ({'type': 'ineq', 'fun': lambda x:  x},
+                'type': 'eq', 'fun': lambda x: np.sum(x*self.y)})
+        
+        x0 = np.random.rand(self.X.shape[0])
+        alpha = minimize(objective, x0, method='trust-constr',
+                         bounds = bnds,
+                         constraints = cons, )
+        return alpha
+        
+        
+    def predict(self, X_new, y_new):
+        prediction = np.sign(np.dot(X_new, self.w)+self.b)
+        return prediction
 
 # Task 4: Change the number of points in the dataset using X = X[:N] and y = y[:N]
 # and build the classifier again using a linear kernel

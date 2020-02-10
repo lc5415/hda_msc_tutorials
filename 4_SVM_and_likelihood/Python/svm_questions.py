@@ -88,11 +88,17 @@ class SVMCustom:
     def train(self, X, y):
         self.X = X
         self.y = y
-        self.alpha = self.optimization_function()
+        self.optim_results = self.optimization_function()
+        self.alpha = self.optim_results.x
         # compute w from alpha, y and X
         # for loop iterates row by row
-        self.w = np.sum(self.alpha*self.y*x) for x in self.X
+        self.w = [np.sum(self.alpha*self.y*row) for row in self.X]
         self.b = self.y - self.w.T*self.X
+        
+        ## extra code
+        # [np.multiply(svme.y,np.sum(row)) for row in svme.X]
+        #
+        # KEEP TRYING THINS FOR self.w
 
     
     def optimization_function(self):
@@ -104,25 +110,33 @@ class SVMCustom:
         def objective(P):
             # P is equivalent to alpha in this case, it's what we wish to
             # optimise for
-            return np.sum(P)-0.5*np.sum(np.multiply(np.dot(P,P.T),
-                          np.dot(self.y,self.y.T), np.dot(self.X,self.X.T)))
+            return np.sum(P)-0.5*np.sum(
+                    np.multiply(np.dot(P,P.T),
+                                np.dot(self.y,self.y.T),
+                                np.dot(self.X,self.X.T)
+                                )
+                    )
             
-        gradient = grad(objective, 0)
+        #gradient = grad(objective, 0)
         bnds = Bounds([0,np.inf],[0,0])
         # by default ineq does f(x) >= 0
         cons = ({'type': 'ineq', 'fun': lambda x:  x},
-                'type': 'eq', 'fun': lambda x: np.sum(x*self.y)})
+                {'type': 'eq', 'fun': lambda x: np.sum(x*self.y)})
         
         x0 = np.random.rand(self.X.shape[0])
-        alpha = minimize(objective, x0, method='trust-constr',
-                         bounds = bnds,
-                         constraints = cons, )
+        alpha = minimize(objective, x0,
+                         method='trust-constr',
+                         #bounds = bnds,
+                         constraints = cons)
         return alpha
         
         
     def predict(self, X_new, y_new):
         prediction = np.sign(np.dot(X_new, self.w)+self.b)
         return prediction
+    
+svme = SVMCustom()
+svme.train(X,y)
 
 # Task 4: Change the number of points in the dataset using X = X[:N] and y = y[:N]
 # and build the classifier again using a linear kernel

@@ -92,7 +92,9 @@ class SVMCustom:
         self.alpha = self.optim_results.x
         # compute w from alpha, y and X
         # for loop iterates row by row
-        self.w = [np.sum(self.alpha*self.y*row) for row in self.X]
+        self.w = [np.sum(np.multiply(svme.alpha*svme.y,
+                                     np.sum(row)))for row in svme.X]
+        self.w = np.array(self.w).reshape(len(self.w),1)
         self.b = self.y - self.w.T*self.X
         
         ## extra code
@@ -110,24 +112,28 @@ class SVMCustom:
         def objective(P):
             # P is equivalent to alpha in this case, it's what we wish to
             # optimise for
-            return np.sum(P)-0.5*np.sum(
-                    np.multiply(np.dot(P,P.T),
-                                np.dot(self.y,self.y.T),
-                                np.dot(self.X,self.X.T)
+            return anp.sum(P)-0.5*anp.sum(
+                    anp.multiply(anp.dot(P,P.T),
+                                anp.dot(self.y,self.y.T),
+                                anp.dot(self.X,self.X.T)
                                 )
                     )
             
         #gradient = grad(objective, 0)
-        bnds = Bounds([0,np.inf],[0,0])
+        
+        
+        x0 = np.random.rand(self.X.shape[0])
+        # MINIMIZE METHOD
+        #bnds = Bounds([0,np.inf],[0,0])
         # by default ineq does f(x) >= 0
         cons = ({'type': 'ineq', 'fun': lambda x:  x},
                 {'type': 'eq', 'fun': lambda x: np.sum(x*self.y)})
-        
-        x0 = np.random.rand(self.X.shape[0])
         alpha = minimize(objective, x0,
                          method='trust-constr',
                          #bounds = bnds,
                          constraints = cons)
+        
+    
         return alpha
         
         
@@ -137,6 +143,11 @@ class SVMCustom:
     
 svme = SVMCustom()
 svme.train(X,y)
+
+from sklearn.svm import SVC
+
+goodSV = SVC()
+fity = goodSV.fit(X,y)
 
 # Task 4: Change the number of points in the dataset using X = X[:N] and y = y[:N]
 # and build the classifier again using a linear kernel

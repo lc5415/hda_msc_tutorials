@@ -112,12 +112,12 @@ class SVMCustom:
         def objective(P):
             # P is equivalent to alpha in this case, it's what we wish to
             # optimise for
-            return anp.sum(P)-0.5*anp.sum(
+            return -1*(anp.sum(P)-0.5*anp.sum(
                     anp.multiply(anp.dot(P,P.T),
                                 anp.dot(self.y,self.y.T),
                                 anp.dot(self.X,self.X.T)
                                 )
-                    )
+                    ))
             
         #gradient = grad(objective, 0)
         

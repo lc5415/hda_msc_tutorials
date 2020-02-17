@@ -34,7 +34,7 @@ $\beta_1$, $\beta_2, \ldots, \beta_p$.
 
 * Similarly, write the loss function for the lasso using vector elements.
 
-* To minimize these loss functions, we need to find their gradients. Find the gradient of the ridge penalized loss function. Find the gradient of the lasso penalized loss function. What parameter are you taking the gradient with respect to?
+* To minimize these loss functions, we need to find their gradients. Find the gradient of the ridge penalized loss function. What parameter are you taking the gradient with respect to?
 
 ## Bias vs. variance
 Ridge and lasso introduce *bias* by shrinking the parameters in a model towards zero. Here is the code from the unbiased linear regression demo in class:

@@ -1,0 +1,153 @@
+---
+title: "Decision Trees"
+author: "Jonathan Ish-Horowicz"
+date: "18/02/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+In this tutorial, we will be looking at implementing the Decision Tree tools that are avaiable in R package `rpart`. In particular we will be looking applying a simple decision tree, using the Gini Index, to the Iris dataset, followed by a more complex dataset. Both are classification problems.
+
+```{r}
+# Load the iris dataset
+data(iris)
+```
+
+As an example, we call the function `rpart::rpart`. This has several options that we can change, but for now, let's see what the default tree looks like for the full iris dataset.
+
+Create a tree then plot it using `rpart.plot::rpart.plot`:
+
+
+```{r}
+library(rpart)
+library(rpart.plot)
+
+tree <- rpart(Species~., data=iris) # Make the tree
+rpart.plot(tree) # Plot the tree
+```
+
+By default `rpart` uses the Gini impurity in the splitting criterion. We can choose to use the entropy (also called information gain) instead using the `parms` argument.
+
+Construct a tree from the `iris` data using entropy to split. Then compare the resulting tree with the tree constructed using Gini impurity.
+
+```{r}
+# Now splitting using entropy (information)
+tree <- rpart(Species~., data=iris, parms=list(split="information"))
+rpart.plot(tree)
+```
+In this case the two trees are the same.
+
+For more hyperparameters we use the `rpart::rpart.control` function, which we pass to `rpart::rpart` using the `control` argument. Use it to build a deeper tree (hint: you will need to alter the `minbucket`, `cp` and `maxdepth` arugments to `rpart::rpart.control` - check their meaning in the documentation).
+
+```{r}
+# Another tree with different hyperparameters
+tree <- rpart(Species~., data=iris, control=rpart.control(cp=0.0, maxdepth=10, minbucket=0))
+rpart.plot(tree)
+```
+
+The `maxdepth` setting prunes the full tree seen above until the longest path in the tree is equal to `maxdepth`. Pruning simplifies the model by removing roots that lead to relatively low information gains. This in turn makes the model more interpretable to humans, and also prevents overfitting.
+
+Lets look at how the `max_depth` affects the accuracy of the model. Start by splitting the data into train and test sets. Use the default `rpart::rpart` arguments to begin with and evaluate the accuracy on the test set.
+
+```{r}
+# Split the data
+train.idxs <- sample(1:nrow(iris),size=as.integer(0.7*nrow(iris)) ,replace=FALSE)
+training.data <- iris[train.idxs,]
+test.data <- iris[-train.idxs,]
+
+# Train
+tree <- rpart(Species~., data=training.data)
+
+# Predictions on test data
+test.predictions <- predict(tree, test.data)
+test.predictions <- colnames(test.predictions)[apply(test.predictions, 1, which.max)]
+
+# Get accuracy
+rpart.plot(tree)
+paste("test accuracy:", sum(as.character(test.data$Species) == test.predictions)/length(test.predictions))
+```
+
+Now try the same with a deeper tree. Compare the test accuracies.
+
+```{r}
+# Build deeper tree
+tree <- rpart(Species~., data=iris, control=rpart.control(cp=0.0, maxdepth=3, minbucket=0))
+rpart.plot(tree)
+
+# Predictions on test data
+test.predictions <- predict(tree, test.data)
+test.predictions <- colnames(test.predictions)[apply(test.predictions, 1, which.max)]
+
+# Get accuracy
+rpart.plot(tree)
+paste("test accuracy:", sum(as.character(test.data$Species) == test.predictions)/length(test.predictions))
+```
+
+The test accuracies are different (yours may be higher or lower, depending on the random seed).
+
+We can now do a more systematic hyperparameter search using a grid search. Perform a grid search for the hyperparemer `maxdepth` values using the `caret` package, which is ubiquitos for machine learning in R. Use k-fold cross-validation (you should choose a sensible value of k given the dataset size).
+
+Hint: start off by calling `caret::trainControl` then use `caret::train` with `method='rpart2'`. There are many good `caret` tutorials online. Control the parameter combinations you want to try using the `tunegrid` argument to `caret::train`.
+
+```{r}
+library(caret)
+
+# We will use 5-fld cross validation
+control <- trainControl(method="cv",
+                              number=5)
+grid <- expand.grid(maxdepth=c(1,2,3))
+rpart.cv <- train(Species ~ ., 
+                  data=training.data,
+                  method="rpart2",
+                  trControl=control,
+                  tuneGrid=grid)
+plot(rpart.cv)
+```
+
+The cross-validation accuracy plateaus after a `maxdepth` of 2.
+
+# PIMA-INDIAN Dataset
+
+Now lets do the same analysis for a much more complicated dataset. Details about this dataset can be found [here](https://www.kaggle.com/uciml/pima-indians-diabetes-database). As a summary, it contains 768 data points with 8 features and a single binary target variable.
+
+```{r}
+# Load pima dataset
+col.names = c('pregnant', 'glucose', 'bp', 'skin', 'insulin', 'bmi', 'pedigree', 'age', 'label')
+
+pima <- read.csv("diabetes.csv", header=FALSE, col.names=col.names)
+pima$label <- as.factor(pima$label)
+head(pima)
+```
+
+Now train a model on the whole dataset:
+
+```{r}
+pima.full.model <- rpart(label~., data=pima)
+rpart.plot(pima.full.model)
+```
+
+Is this the best model we can obtain? Use `caret::train` again to choose a model using k-fold cross-validation.
+
+```{r}
+control <- trainControl(method = "cv",
+                              number = 5)
+grid <- expand.grid(maxdepth=c(1,2,3))
+rpart.cv <- train(label ~ ., 
+                  data = pima,
+                  method = "rpart2",
+                  trControl = control,
+                  tuneGrid=grid,
+                  tuneLength = 15)
+plot(rpart.cv)
+```
+
+The optimal tree depth is 2. The final model looks like this:
+
+```{r}
+rpart.plot(rpart.cv$finalModel)
+```
+
+It is much shallower than the model obtained using the default arguments for `rpart::rpart`. This makes it easier to interpret.

@@ -1,0 +1,136 @@
+---
+title: "PCA and k-means"
+author: "Jonathan Ish-Horowicz"
+date: "25/02/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Task 1: Perform PCA and plot the first two principal components of the data
+
+There are two functions that are commonly used to do PCA in R: `princomp` and `prcomp`. They are essentially equivalent so you can use whichever you prefer. Just make sure you read the documentation carefully.
+
+*hint: do you need to do any preprocessing on the data?*
+
+```{r}
+# Load data
+library(mlbench)
+data("BreastCancer")
+BreastCancer <- BreastCancer[complete.cases(BreastCancer),]
+
+X <- apply(BreastCancer[2:10], 2, as.numeric)
+y <- BreastCancer[[11]]
+```
+
+Perform PCA and plot the data in the space of the first 2 PCs:
+
+```{r}
+library(ggplot2)
+
+#your code here
+```
+
+#  Task 2: Create a scree plot 
+
+This is a line plot of the variance explained (square of the eigenvalue) of each of the principal components. On a separate plot, plot the cumulative variance explained.
+
+```{r}
+#your code here
+```
+
+```{r}
+#your code here
+```
+
+# Task 3: Calculate and plot the eigenvalues
+
+Calculate the eigenvalue for each principal component manually. Make sure this matches what the built-in R functions is telling you.
+
+Hint: for an $n \times p$ data matrix $\mathbf{X}$, where $n$ is the number of samples and $p$ is the number of variables, we perform PCA by doing the eigendecomposition of its covariance matrix.
+
+```{r}
+#your code here
+```
+
+# Task 4: Perform K-means clustering for different values of K and plot the resulting clusters
+
+Use the built-in `kmeans` function to perform k-means clustering in R. An important part of clustering is to choose the number of clusters $K$. 
+
+The eblow method is a simple way to do this. Perform the clustering for different values of $K$ and compare their within sum of squares - the mean squared distance from each point to its cluster centre. This value will go down as $K$ increases (consider the situation when $k$ is equal to the number of data), but there may be a point where adding a new cluster does not decrease the within SS by much (the "elbow"). This is the optimal number of clusters according to the elbow method.
+
+Plot the within-SS for different values of $K$ and choose the optimal value.
+
+```{r}
+#your code here
+```
+
+More sophisticated ways to choosing $K$ involve using the labels (this is not possible as we do not always have labels). These are called externel metrics. The idea is that a "good" clustering will place items with the same class in similar clusters. When you do not have any labels you are resticted to using internal metrics. Here, the idea is that items within clusters should be more similar to one another than to theose in other clusters.
+
+Many of these metrics are available in the `clusteval` package. Check [this link](https://en.wikipedia.org/wiki/Cluster_analysis#External_evaluation) to read up on some external evaluation metrics then calculate some of them for the Breast Cancer dataset for different values of $K$. You should be comparing clustering results to the true labels.
+
+Hint: use the `cluster_similarity` to compare the optimal $K$ according to the Jaccard and Rand indices.
+
+```{r}
+library(clusteval)
+#your code here
+```
+
+Both metrics suggest using two clusters. This makes sense as this is a binary classification problem (we have two classes).
+
+Bootstrapping is another useful method to check how robust the clustering result is. You may also have *a priori* information on the number of clusters that should appear in the data.
+
+# Task 5: Kernel PCA. Using the data generated below, apply kernel PCA and plot the first two principal components of the data
+
+Now we have a dataste with nonlinear structure:
+
+```{r}
+circles <- as.data.frame(mlbench.circle(300, d=2))
+ggplot(circles, aes(x=x.1, y=x.2, color=classes)) + geom_point()
+```
+
+If we try to do regular PCA on this dataset we get the following result:
+
+```{r}
+pca.result.circles <- prcomp(circles[1:2], scale=TRUE, center=TRUE)
+pca.result.circles.df <- as.data.frame(pca.result.circles$x)
+pca.result.circles.df$classes <- circles$classes
+ggplot(pca.result.circles.df, aes(x=PC1, y=PC2, color=classes)) + geom_point()
+```
+
+This is just the same structure as we saw in the original data.
+
+To discover the nonlinear structure of the rings we can use kernel-PCA. In effect, we perform PCA on the kernel instead of the data.
+
+Use the `kernlab::kpca` function to perform kernel PCA on the `circles` dataset and plot the data in the PC1-PC2 space. You will need to choose a kernel and set its hyperparameters. Since some kernels (you may want to use the `features` argument to `kernlab::kpca` to limit the number of features that are returned).
+
+Note: the object returned by `kpca` is an S4 object, which means that you should access its attributes using `@` instead of `$` (i.e. it is not a list).
+
+```{r}
+library(kernlab)
+#your code here
+```
+
+Now we are able to see more separated structure in the data.
+
+# Task 6: Kernel k-means
+
+We can also cluster the kernel matrix instead of directly on the data. If we try and cluster the circle data using vanilla kmeans we get the following result.
+
+```{r}
+circles$kmeans.cluster <- as.factor(kmeans(circles[1:2], 2)$cluster)
+ggplot(circles, aes(x=x.1, y=x.2, color=kmeans.cluster)) + geom_point()
+```
+
+The clustering does not look anything like the true class labels because kmeans cannot handle the nonlinear structure.
+
+Cluster the data using kernel kmeans using `kernlab::kkmeans`. 
+
+Hint: to extract the cluster membership from a `kkmeans` result using `result@.Data`.
+
+```{r}
+#your code here
+```
+
